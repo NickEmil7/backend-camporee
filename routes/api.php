@@ -3,94 +3,50 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\SanctionController;
+use App\Http\Controllers\UserController;
 
-
-use App\Models\Role;
-Route::get('/roles', function () {
-    $roles = Role::all(); // Obtener todos los roles
-    return response()->json($roles); // Retornar los roles en formato JSON
-});
-
-//En el register el unico que puede registrar nuevo usuario es el admin
-Route::post('/register', [AuthController::class, 'register']);
-
+// --- RUTAS PÚBLICAS ---
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::get('/user', [UserController::class, 'get_user']) -> middleware('auth:sanctum');
+// --- RUTAS PROTEGIDAS ---
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [UserController::class, 'get_user']);
 
-//Obtener jueces
-Route::get('/jueces', [UserController::class, 'get_jueces']);
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-
-Route::put('/jueces/{id}', [UserController::class, 'update'])-> middleware('auth:sanctum', 'role:Admin');
-Route::delete('/jueces/{id}', [UserController::class, 'delete'])-> middleware('auth:sanctum', 'role:Admin');
-
-
-
-// Eventos
-Route::middleware(['auth:sanctum'])->group(function () {
+    // RUTAS SOLO PARA ADMIN
     Route::middleware('role:Admin')->group(function () {
-        Route::post('/events', [EventController::class, 'store']);
-        Route::put('/events/{id}', [EventController::class, 'update']);
-        Route::delete('/events/{id}', [EventController::class, 'destroy']);
+        Route::post('/register', [AuthController::class, 'register']); // Registro ahora es privado
+        
+        // Gestión de Clubes
+        Route::apiResource('clubs', ClubController::class); // Crea index, store, show, update, destroy
+        
+        // Gestión de Eventos
+        Route::apiResource('events', EventController::class);
+        
+        // Gestión de Usuarios/Jueces
+        Route::get('/jueces', [UserController::class, 'get_jueces']);
+        Route::put('/users/{user}', [UserController::class, 'update']);
+        Route::delete('/users/{user}', [UserController::class, 'delete']);
     });
-});
 
-Route::get('/events', [EventController::class, 'index']);
-
-// Clubes
-Route::get('/clubs', [ClubController::class, 'index']);
-
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::middleware('role:Admin')->group(function () {
-        Route::post('/clubs', [ClubController::class, 'store']);
-        Route::put('/clubs/{id}', [ClubController::class, 'update']);
-        Route::delete('/clubs/{id}', [ClubController::class, 'destroy']);
-    });
-});
-
-
-//Puntajes
-Route::middleware(['auth:sanctum'])->group(function () {
+    // RUTAS PARA JUECES (Y ADMIN)
     Route::middleware('role:Juez')->group(function () {
-        Route::post('/puntajes', [EventController::class, 'store']);
-        Route::put('/puntajes/{id}', [EventController::class, 'update']);
-        Route::delete('/puntajes/{id}', [EventController::class, 'destroy']);
+        // Puntajes (Corregido: Ahora apuntan a ScoreController)
+        Route::post('/scores', [ScoreController::class, 'store']);
+        Route::put('/scores/{score}', [ScoreController::class, 'update']);
+        Route::delete('/scores/{score}', [ScoreController::class, 'destroy']);
+
+        // Sanciones
+        Route::post('/sanctions', [SanctionController::class, 'store']);
+        Route::put('/sanctions/{sanction}', [SanctionController::class, 'update']);
+        Route::delete('/sanctions/{sanction}', [SanctionController::class, 'destroy']);
     });
-});
-Route::get('/puntajes', [EventController::class, 'index']);
 
-//Sanciones
-// Rutas protegidas por el middleware de autenticación y rol de Juez
-Route::middleware(['auth:sanctum', 'role:Juez'])->group(function () {
-    Route::post('/sanctions', [SanctionController::class, 'store']); // Crear sanción
-    Route::put('/sanctions/{sanction}', [SanctionController::class, 'update']); // Modificar sanción
-    Route::delete('/sanctions/{sanction}', [SanctionController::class, 'destroy']); // Eliminar sanción
-});
-
-// Ruta pública para consultar sanciones (opcional)
-Route::get('/sanctions', [SanctionController::class, 'index']); // Ver todas las sanciones
-
-
-
-
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/admin', function () {
-        return 'Admin Access';
-    })->middleware('role:Admin');
-    
-    Route::get('/juez', function () {
-        return 'Juez Access';
-    })->middleware('role:Juez');
-
-
+    // RUTAS DE CONSULTA (Para todos los logueados: Admin, Juez, Director)
+    // Route::get('/ranking', [ScoreController::class, 'index']); // Ejemplo de ruta para ver resultados
 });
 

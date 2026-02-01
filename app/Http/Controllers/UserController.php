@@ -22,15 +22,15 @@ class UserController extends Controller
 
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request, $user){
         $request->validate([
             'name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-        ]);
+        ]); 
         
-        $user = User::findOrFail($id);
+        // $user = User::findOrFail($id); -> Borrar despues de probar $user
 
         // Verificar que el usuario a modificar sea un Juez
         if ($user->role->name !== 'Juez') {
@@ -48,7 +48,7 @@ class UserController extends Controller
             $user->email = $request->email;
         }
         if ($request->has('password')) {
-            $user->password = Hash::make($request->password);
+            $user->password = Hash::make($request->password); 
         }
 
         $user->save();

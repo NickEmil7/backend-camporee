@@ -13,7 +13,7 @@ class ScoreController extends Controller
         // Validar la entrada (sin juez_id, ya que lo obtenemos del usuario autenticado)
         $validated = $request->validate([
             'club_id' => 'required|exists:clubs,id',
-            'evento_id' => 'required|exists:eventos,id',
+            'event_id' => 'required|exists:events,id',
             'score' => 'required|integer|min:0|max:100',
         ]);
 
@@ -24,7 +24,7 @@ class ScoreController extends Controller
         $score = Score::create([
             'juez_id' => $juez->id,
             'club_id' => $validated['club_id'],
-            'evento_id' => $validated['evento_id'],
+            'event_id' => $validated['event_id'],
             'score' => $validated['score']
         ]);
 
