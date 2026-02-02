@@ -10,16 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
-        });
+{
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('last_name')->nullable(); // Agregado aquí
+        $table->string('email')->unique();
+        $table->timestamp('email_verified_at')->nullable();
+        $table->string('password');
+        
+        // Agregamos el rol sin restricción estricta para evitar error de orden de tablas
+        $table->foreignId('role_id')->nullable(); 
+        
+        $table->rememberToken();
+        $table->timestamps();
+        $table->softDeletes(); // <--- ESTO SOLUCIONA TU ERROR ACTUAL
+    });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

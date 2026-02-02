@@ -5,31 +5,42 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-// use App\Models\User;
-// use App\Models\Event;
-// use App\Models\Club;
+// --- IMPORTACIONES OBLIGATORIAS ---
+use App\Models\Event; 
+use App\Models\Club;
+use App\Models\User;
 
 class Score extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
-    protected $fillable = ['juez_id', 'club_id', 'event_id', 'score'];
-    
+    protected $fillable = [
+        'event_id',
+        'club_id',
+        'juez_id',
+        'total_score',
+        'details',
+        'feedback'
+    ];
+
+    protected $casts = [
+        'details' => 'array',
+        'total_score' => 'decimal:2',
+    ];
+
     public function club()
     {
-        // withTrashed() permite que el puntaje siga unido al club aunque se desactive
         return $this->belongsTo(Club::class)->withTrashed();
     }
 
     public function event()
     {
+        // Esto fallaba porque no tenías "use App\Models\Event;" arriba
         return $this->belongsTo(Event::class)->withTrashed();
     }
 
-    public function juez()
+    public function judge()
     {
         return $this->belongsTo(User::class, 'juez_id')->withTrashed();
     }
-
 }
-

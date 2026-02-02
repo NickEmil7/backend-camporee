@@ -6,26 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('club', function (Blueprint $table) {
+        // CAMBIO: Nombre de tabla 'clubs' (plural)
+        Schema::create('clubs', function (Blueprint $table) {
             $table->id();
-            $table -> string('name');
-            $table->string('church');
-            $table->string('location');
-            $table-> integer('members');
+            $table->string('name');
+            $table->string('code')->nullable(); // Campo nuevo del Frontend
+            $table->text('description')->nullable(); // Campo nuevo
+            $table->boolean('is_active')->default(true); // Campo nuevo
+            
+            // Eliminamos church, location, members porque el frontend nuevo no los usa
+            
             $table->timestamps();
+            $table->softDeletes(); // Importante para tu modelo
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('club');
+        Schema::dropIfExists('clubs');
     }
 };

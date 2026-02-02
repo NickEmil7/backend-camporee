@@ -4,29 +4,30 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateRolesTable extends Migration
+return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->timestamps();
-        });
-
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->default(3)->constrained('roles'); // El rol por defecto es Director
-        });
+        // Verificamos si existe para evitar errores
+        if (!Schema::hasTable('roles')) {
+            Schema::create('roles', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('description')->nullable(); // Agregamos description como opcional
+                $table->timestamps();
+                $table->softDeletes(); // Agregamos deleted_at por si tu modelo lo usa
+            });
+        }
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['role_id']);
-            $table->dropColumn('role_id');
-        });
-
         Schema::dropIfExists('roles');
     }
-}
-
+};

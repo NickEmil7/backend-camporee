@@ -11,14 +11,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->date('date');
-            $table->string('location');
-            $table->string('type');
-            $table->timestamps();
-        });
+        // Revisamos si la tabla existe para evitar errores, aunque con fresh no debería pasar
+        if (!Schema::hasTable('events')) {
+            Schema::create('events', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                
+                // === CAMPOS NUEVOS (Frontend) ===
+                $table->string('event_type')->nullable(); 
+                $table->string('evaluation_type')->default('standard');
+                $table->text('description')->nullable();
+                $table->decimal('max_score', 8, 2)->default(0);
+                $table->integer('weight')->default(0);
+                $table->boolean('is_active')->default(true);
+
+                // === CAMPOS VIEJOS (Compatibilidad) ===
+                // Los dejamos nullable para que no te den error si no los usas
+                $table->date('date')->nullable();
+                $table->string('location')->nullable();
+                $table->string('type')->nullable(); 
+
+                $table->timestamps();
+                $table->softDeletes(); // Importante para tu modelo
+            });
+        }
     }
 
     /**

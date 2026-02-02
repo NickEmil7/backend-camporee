@@ -10,10 +10,25 @@ class Event extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ["name", "date", "location", "type"];
+    protected $fillable = [
+        'name',
+        'event_type',
+        'evaluation_type',
+        'description',
+        'max_score',
+        'weight',
+        'is_active',
+        'date',     // Opcional
+        'location'  // Opcional
+    ];
 
     public function scores()
     {
         return $this->hasMany(Score::class);
+    }
+
+    public function judges()
+    {
+        return $this->belongsToMany(User::class, 'event_user');
     }
 }
