@@ -27,6 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:Admin')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
         
         // Gestión de Clubes (Crear, Editar, Borrar)
         Route::post('/clubs', [ClubController::class, 'store']);

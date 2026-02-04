@@ -7,30 +7,39 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log; 
+
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:roles,id', // Validamos que el rol sea válido
+        Log::info('👀 Petición de registro recibida', $request->all());
+        // 1. Validar (Agregamos 'role' a la validación)
+        $fields = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6', // confirmed(ver si hace falta agregarlo) exige password_confirmation
+            'role_id' => 'required|integer|exists:roles,id' // <--- Importante validar el rol
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id, // Guardamos el role_id
+        // 2. Crear el Usuario
+        $user = \App\Models\User::create([
+            'name' => $fields['name'],
+            'email' => $fields['email'],
+            'password' => bcrypt($fields['password']),
+            'role_id' => $fields['role_id'] // <--- Asignamos el rol que mandó el Admin
         ]);
 
-        $token = $user->createToken('auth-token')-> plainTextToken;
+        // --- ELIMINAMOS LA CREACIÓN DE TOKEN ---
+        // $token = $user->createToken('myapptoken')->plainTextToken;  <--- BORRAR ESTO
+        // ---------------------------------------
 
-        return response()->json(['data' => $user, 'access_token' => $token, 'token_type' => 'Bearer'],);
+        // 3. Respuesta limpia (Solo confirmación)
+        return response()->json([
+            'message' => 'Usuario registrado exitosamente',
+            'user' => $user
+        ], 201);
     }
 
     public function login(Request $request)
