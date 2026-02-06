@@ -8,9 +8,19 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ScoreController;
 use App\Http\Controllers\SanctionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\RankingController;
 
 // --- RUTAS PÚBLICAS ---
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/ranking', [RankingController::class, 'index']);
+
+Route::post('/sanctions', [SanctionController::class, 'store']);
+Route::put('/sanctions/{sanction}', [SanctionController::class, 'update']);
+Route::delete('/sanctions/{sanction}', [SanctionController::class, 'destroy']);
+
+
 
 // --- RUTAS PROTEGIDAS (Cualquier usuario logueado) ---
 Route::middleware('auth:sanctum')->group(function () {
@@ -22,9 +32,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events/{event}', [EventController::class, 'show']);
     Route::get('/clubs', [ClubController::class, 'index']);
     Route::get('/clubs/{club}', [ClubController::class, 'show']);
+    Route::get('/judge/events', [EventController::class, 'myEvents']);
 
     // --- RUTAS SOLO PARA ADMIN ---
     Route::middleware('role:Admin')->group(function () {
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+        Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+
         Route::post('/register', [AuthController::class, 'register']);
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/{id}', [UserController::class, 'show']);
@@ -38,17 +53,19 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Gestión de Eventos (Crear, Editar, Borrar)
         Route::post('/events', [EventController::class, 'store']);
-        Route::put('/events/{event}', [EventController::class, 'update']);
-        Route::delete('/events/{event}', [EventController::class, 'destroy']);
+        Route::put('/events/{id}', [EventController::class, 'update']);
+        Route::delete('/events/{id}', [EventController::class, 'destroy']);
         
         // Gestión de Usuarios
         Route::get('/jueces', [UserController::class, 'get_jueces']);
         Route::put('/users/{user}', [UserController::class, 'update']);
         Route::delete('/users/{user}', [UserController::class, 'delete']);
+
+        Route::get('/events/{id}', [EventController::class, 'show']);
         
         // Rutas para asignar jueces
-        Route::post('/events/{event}/judges', [EventController::class, 'assignJudges']);
-        Route::get('/events/{event}/judges', [EventController::class, 'getJudges']);
+        Route::post('/events/{id}/judges', [EventController::class, 'assignJudges']);
+        Route::get('/events/{id}/judges', [EventController::class, 'getJudges']);
     });
 
     // --- RUTAS PARA JUECES (Y ADMIN) ---
@@ -62,6 +79,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/sanctions', [SanctionController::class, 'store']);
         Route::put('/sanctions/{sanction}', [SanctionController::class, 'update']);
         Route::delete('/sanctions/{sanction}', [SanctionController::class, 'destroy']);
+
+
+
     });
 });
 

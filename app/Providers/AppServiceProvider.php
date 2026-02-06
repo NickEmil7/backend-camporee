@@ -3,6 +3,12 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\User;
+use App\Models\Club;   // <-- Importa tus modelos
+use App\Models\Event;
+use App\Models\Sanction;
+use App\Observers\AuditObserver;
+use App\Models\Score;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        User::observe(AuditObserver::class);
+        Club::observe(AuditObserver::class);
+        Event::observe(AuditObserver::class);
+        Sanction::observe(AuditObserver::class);
+        Score::observe(AuditObserver::class);
+
     }
 }

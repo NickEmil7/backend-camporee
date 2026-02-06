@@ -4,11 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-// --- IMPORTACIONES OBLIGATORIAS ---
-use App\Models\Event; 
-use App\Models\Club;
-use App\Models\User;
 
 class Score extends Model
 {
@@ -17,30 +12,23 @@ class Score extends Model
     protected $fillable = [
         'event_id',
         'club_id',
-        'juez_id',
-        'total_score',
+        'juez_id', // <--- CAMBIO CRÍTICO: Antes decía user_id
+        'score',
         'details',
         'feedback'
     ];
 
     protected $casts = [
-        'details' => 'array',
-        'total_score' => 'decimal:2',
+        'details' => 'array', 
+        'score' => 'decimal:2'
     ];
 
-    public function club()
-    {
-        return $this->belongsTo(Club::class)->withTrashed();
-    }
-
-    public function event()
-    {
-        // Esto fallaba porque no tenías "use App\Models\Event;" arriba
-        return $this->belongsTo(Event::class)->withTrashed();
-    }
-
-    public function judge()
-    {
-        return $this->belongsTo(User::class, 'juez_id')->withTrashed();
+    public function event() { return $this->belongsTo(Event::class); }
+    public function club() { return $this->belongsTo(Club::class); }
+    
+    // Relación con el Juez (Usuario)
+    // Le decimos a Laravel explícitamente que use la columna 'juez_id'
+    public function juez() { 
+        return $this->belongsTo(User::class, 'juez_id'); 
     }
 }

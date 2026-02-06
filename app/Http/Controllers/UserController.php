@@ -52,20 +52,79 @@ class UserController extends Controller
     }
 
     // 2. UPDATE: Maneja Datos + Restaurar/Eliminar (SoftDelete)
+    // public function update(Request $request, $id) 
+    // {
+    //     Log::info('👀 Petición de actualización recibida', $request->all());
+        
+    //     // CAMBIO: Buscamos incluso entre los borrados para poder reactivarlos
+    //     $userModel = User::withTrashed()->find($id);
+
+    //     $statusInput = $request->input('is_active', $request->input('isActive'));
+    //     $shouldBeActive = $statusInput === 'on' || $statusInput === 'true' || $statusInput === true;
+    //     // $shouldBeActive = $request->isActive === 'on' || $request->isActive === true;
+        
+    
+    //     if (!$shouldBeActive && $userModel->id === $request->user()->id) {
+    //         return response()->json(['message' => '¡No puedes desactivarte a ti mismo!'], 403);
+    //     }
+
+
+        
+    //     if (!$userModel) {
+    //          return response()->json(['message' => 'Usuario no encontrado'], 404);
+    //     }
+
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         // El unique debe ignorar el ID actual, incluso si está soft-deleted
+    //         'email' => 'required|string|email|max:255|unique:users,email,'.$userModel->id,
+    //         'password' => 'nullable|string|min:6',
+    //         'role_id' => 'required|integer|exists:roles,id'
+    //     ]); 
+        
+    //     // 1. Actualizar datos básicos
+    //     $userModel->name = $request->name;
+    //     $userModel->email = $request->email;
+    //     $userModel->role_id = $request->role_id;
+
+    //     if ($request->has('last_name')) {
+    //         $userModel->last_name = $request->last_name;
+    //     }
+
+    //     if ($request->filled('password')) {
+    //         $userModel->password = Hash::make($request->password); 
+    //     }
+
+    //     // 2. LÓGICA DE ACTIVAR / DESACTIVAR (SoftDeletes)
+    //     // Convertimos el input del Switch a booleano
+    //     $shouldBeActive = $request->isActive === 'on' || $request->isActive === true || $request->isActive === "true";
+
+    //     if ($shouldBeActive) {
+    //         // Si queremos activarlo y actualmente está borrado -> RESTAURAR
+    //         if ($userModel->trashed()) {
+    //             $userModel->restore();
+    //         }
+    //     } else {
+    //         // Si queremos desactivarlo y actualmente está vivo -> BORRAR (Soft)
+    //         if (!$userModel->trashed()) {
+    //             $userModel->delete();
+    //         }
+    //     }
+
+    //     $userModel->save();
+
+    //     // Calculamos el estado final para devolverlo al front
+    //     $userModel->is_active = !$userModel->trashed();
+
+    //     return response()->json(['message' => 'Usuario actualizado exitosamente', 'user' => $userModel]);
+    // }
+
     public function update(Request $request, $id) 
     {
-        Log::info('👀 Petición de actualización recibida', $request->all());
+        // Log::info('👀 Petición de actualización recibida', $request->all());
         
-        // CAMBIO: Buscamos incluso entre los borrados para poder reactivarlos
+        // 1. Buscamos incluso entre los borrados (withTrashed)
         $userModel = User::withTrashed()->find($id);
-
-        $shouldBeActive = $request->isActive === 'on' || $request->isActive === true;
-    
-        if (!$shouldBeActive && $userModel->id === $request->user()->id) {
-            return response()->json(['message' => '¡No puedes desactivarte a ti mismo!'], 403);
-        }
-
-
         
         if (!$userModel) {
              return response()->json(['message' => 'Usuario no encontrado'], 404);
@@ -73,13 +132,12 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            // El unique debe ignorar el ID actual, incluso si está soft-deleted
             'email' => 'required|string|email|max:255|unique:users,email,'.$userModel->id,
             'password' => 'nullable|string|min:6',
             'role_id' => 'required|integer|exists:roles,id'
         ]); 
         
-        // 1. Actualizar datos básicos
+        // Actualizar datos básicos
         $userModel->name = $request->name;
         $userModel->email = $request->email;
         $userModel->role_id = $request->role_id;
@@ -92,29 +150,34 @@ class UserController extends Controller
             $userModel->password = Hash::make($request->password); 
         }
 
-        // 2. LÓGICA DE ACTIVAR / DESACTIVAR (SoftDeletes)
-        // Convertimos el input del Switch a booleano
-        $shouldBeActive = $request->isActive === 'on' || $request->isActive === true || $request->isActive === "true";
+        // --- CORRECCIÓN AQUÍ ---
+        // Leemos 'is_active' (como viene en tu log) O 'isActive' (por si acaso)
+        $statusInput = $request->input('is_active', $request->input('isActive'));
+
+        // Verificamos si es 'on', 'true', o booleano true
+        $shouldBeActive = $statusInput === 'on' || $statusInput === 'true' || $statusInput === true;
 
         if ($shouldBeActive) {
-            // Si queremos activarlo y actualmente está borrado -> RESTAURAR
+            // Si queremos activar y está borrado -> RESTAURAR
             if ($userModel->trashed()) {
                 $userModel->restore();
             }
         } else {
-            // Si queremos desactivarlo y actualmente está vivo -> BORRAR (Soft)
+            // Si queremos desactivar y está vivo -> BORRAR
             if (!$userModel->trashed()) {
-                $userModel->delete();
+                $userModel->delete(); // Soft Delete
             }
         }
+        // -----------------------
 
         $userModel->save();
 
-        // Calculamos el estado final para devolverlo al front
+        // Actualizamos la propiedad virtual para la respuesta
         $userModel->is_active = !$userModel->trashed();
 
         return response()->json(['message' => 'Usuario actualizado exitosamente', 'user' => $userModel]);
     }
+
 
     public function delete($id){
         // Si usas el botón de "Eliminar" en la lista, esto hará un SoftDelete (Desactivar)

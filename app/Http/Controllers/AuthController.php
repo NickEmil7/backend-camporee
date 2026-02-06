@@ -14,7 +14,7 @@ class AuthController extends Controller
 {
 public function register(Request $request)
     {
-        Log::info('👀 Petición de registro recibida', $request->all());
+        // Log::info('👀 Petición de registro recibida', $request->all());
         // 1. Validar (Agregamos 'role' a la validación)
         $fields = $request->validate([
             'name' => 'required|string',
@@ -54,6 +54,15 @@ public function register(Request $request)
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
+
+        if (Auth::attempt(...)) {
+            \App\Models\AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'LOGIN',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
             ]);
         }
 
