@@ -15,7 +15,7 @@ class ClubController extends Controller
     function store(Request $request){
         $request->validate([
             'name' => 'required|string',
-            'code' => 'required|string',
+            'code' => 'required|string|unique:clubs,code',
             'description' => 'nullable|string',
             'is_active' => 'boolean'
         ]);
@@ -27,10 +27,13 @@ class ClubController extends Controller
     function update(Request $request, Club $club){
         $request->validate([
             'name' => 'sometimes|string',
-            'code' => 'sometimes|string',
+            'code' => 'sometimes|string|unique:clubs,code,' . $club->id,
             'description' => 'nullable|string',
             'is_active' => 'boolean'
+        ],[
+        'code.unique' => 'Este código ya pertenece a otro club.',
         ]);
+    
         
         $club->update($request->all());
         return response()->json(['club' => $club]);

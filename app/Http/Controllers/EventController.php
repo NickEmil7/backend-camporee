@@ -85,6 +85,9 @@ public function show($id)
             'weight'          => 'sometimes|numeric',
             'is_active'       => 'boolean', // Recuerda el input hidden que agregamos
             'description'     => 'nullable|string',
+            'date'            => 'nullable|date',      // <--- AGREGADO
+            
+
         ]);
 
         // 2. ACTUALIZACIÓN MANUAL: Mapeamos Input React -> Columna DB
@@ -99,6 +102,7 @@ public function show($id)
             'weight'          => $request->input('weight', $event->weight),
             'is_active'       => $request->input('is_active', $event->is_active),
             'description'     => $request->input('description', $event->description),
+            'date'            => $request->input('date', $event->date),
         ]);
 
         return response()->json([
