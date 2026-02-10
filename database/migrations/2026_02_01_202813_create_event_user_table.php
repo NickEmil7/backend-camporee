@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // AGREGAMOS ESTA VERIFICACIÓN
+        // AGREGAMOS ESTA LÍNEA DE PROTECCIÓN
         if (!Schema::hasTable('event_user')) {
             Schema::create('event_user', function (Blueprint $table) {
                 $table->id();
