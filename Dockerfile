@@ -38,4 +38,5 @@ EXPOSE 80
 
 
 # 10. COMANDO DE ARRANQUE (Esto reemplaza al Start Command de la web)
-CMD sh -c "php artisan migrate --force && apache2-foreground"
+# Solo arranca Apache, sin migraciones
+CMD sh -c "apache2-foreground"
