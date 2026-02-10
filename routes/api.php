@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\SystemController;
 
 // --- RUTAS PÚBLICAS ---
 Route::post('/login', [AuthController::class, 'login']);
@@ -66,6 +67,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rutas para asignar jueces
         Route::post('/events/{id}/judges', [EventController::class, 'assignJudges']);
         Route::get('/events/{id}/judges', [EventController::class, 'getJudges']);
+
+        // Rutas para resetear datos (Scores y Sanciones)
+        Route::delete('/system/reset-scores', [SystemController::class, 'resetScores']);
+        Route::delete('/system/reset-sanctions', [SystemController::class, 'resetSanctions']);
+
+
     });
 
     // --- RUTAS PARA JUECES (Y ADMIN) ---

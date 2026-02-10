@@ -7,17 +7,17 @@ use App\Models\AuditLog;
 
 class AuditLogController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
     {
-        // Traemos logs con el usuario asociado, ordenados por fecha
+        // 1. Preparamos la consulta ordenando por el más reciente
         $query = AuditLog::with('user:id,name,last_name')->latest();
 
-        // Filtro opcional por acción (CREATE, UPDATE, etc.)
-        if ($request->has('action') && !empty($request->action)) {
+        // 2. Filtro de Acción (si el front lo pide)
+        if ($request->has('action') && $request->action !== 'ALL') {
             $query->where('action', $request->action);
         }
 
-        // Limitamos a 100 para no saturar la vista (o usa paginate)
+        // 3. CAMBIO: Limitamos estrictamente a 100 registros
         return response()->json($query->limit(100)->get());
     }
 }

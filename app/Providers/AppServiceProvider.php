@@ -10,6 +10,7 @@ use App\Models\Sanction;
 use App\Observers\AuditObserver;
 use App\Models\Score;
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**

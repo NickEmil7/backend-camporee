@@ -12,6 +12,10 @@ class DashboardController extends Controller
 {
     public function stats()
     {
+        $eventsWithoutJudges = Event::where('is_active', true)
+        ->doesntHave('judges')
+        ->select('id', 'name') // Solo necesitamos ID y nombre
+        ->get();
         return response()->json([
             // Contamos clubes activos
             'total_clubs' => Club::where('is_active', true)->count(),
@@ -26,6 +30,9 @@ class DashboardController extends Controller
             
             // Total de evaluaciones
             'total_scores' => Score::count(),
+
+
+            'pending_events' => $eventsWithoutJudges
         ]);
     }
 }
