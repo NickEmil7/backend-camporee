@@ -35,3 +35,7 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # 9. Exponer el puerto 80
 EXPOSE 80
+
+
+# 10. COMANDO DE ARRANQUE (Esto reemplaza al Start Command de la web)
+CMD sh -c "php artisan migrate --force && apache2-foreground"
