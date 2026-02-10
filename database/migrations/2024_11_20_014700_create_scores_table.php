@@ -6,25 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('scores', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('juez_id')->constrained('users');
-            $table->integer('club_id')->constrained();
-            $table->integer('event_id')->constrained();
-            $table->integer('score');
-
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('scores')) {
+            Schema::create('scores', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('juez_id')->constrained('users');
+                $table->integer('club_id')->constrained();
+                $table->integer('event_id')->constrained();
+                $table->integer('score'); // Si necesitas decimales cámbialo a decimal
+                $table->timestamps();
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('scores');
